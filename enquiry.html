@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enquiry | Pratham Enterprises</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">Pratham <span>Enterprises</span></div>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Open navigation menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="properties.html">Properties</a>
+            <a href="enquiry.html">Contact</a>
+        </div>
+    </nav>
+
+    <header class="hero" style="height: 40vh;">
+        <h1>Get In Touch</h1>
+        <p>Fill out the form below and we will get back to you shortly.</p>
+    </header>
+
+    <section class="container">
+        <div class="form-container">
+            <h2 style="text-align: center; margin-bottom: 30px; color: var(--dark-black);">Property Enquiry Form</h2>
+
+            <form id="enquiryForm" onsubmit="submitEnquiry(event)">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required pattern="[0-9]{10}">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="requirement">Requirement *</label>
+                    <select id="requirement" name="requirement" required>
+                        <option value="">Select your requirement</option>
+                        <option value="Buy">Buy</option>
+                        <option value="Sell">Sell</option>
+                        <option value="Rent">Rent</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="property">Property Name</label>
+                    <input type="text" id="property" name="property" placeholder="Property name (auto-filled if you came from a property page)">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Additional Message</label>
+                    <textarea id="description" name="description" placeholder="Tell us more about your requirements..."></textarea>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%;">Submit Enquiry</button>
+            </form>
+
+            <div id="successMessage" style="display: none; text-align: center; padding: 30px; background: #d4edda; border: 2px solid #28a745; border-radius: 10px; margin-top: 20px;">
+                <h3 style="color: #155724; margin-bottom: 10px;"><i class="fas fa-check-circle"></i> Enquiry Submitted Successfully</h3>
+                <p style="color: #155724;">Thank you for your enquiry. Our team will contact you within 24 hours.</p>
+                <a href="index.html" class="btn" style="margin-top: 20px; display: inline-block;">Back to Home</a>
+            </div>
+            <div id="errorMessage" class="success-message" style="display: none; background: #fde8e8; border-color: #dc2626;">
+                <h3 style="color: #991b1b; margin-bottom: 10px;"><i class="fas fa-circle-exclamation"></i> Submission Failed</h3>
+                <p id="errorText" style="color: #991b1b; margin-bottom: 0;">Please try again.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="property-info-section">
+        <div class="container">
+            <h2 class="section-title">Contact Information</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-icon"><i class="fas fa-phone"></i></div>
+                    <h3>Call Us</h3>
+                    <p>+91 72081 53358</p>
+                    <p>+91 86520 16879</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                    <h3>Email Us</h3>
+                    <p>prathamenterprises36@gmail.com</p>
+                    <p>bhauraobansod28@gmail.com</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon"><i class="fas fa-location-dot"></i></div>
+                    <h3>Visit Us</h3>
+                    <p>Navi Mumbai - 400706</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <h3>Pratham Enterprises</h3>
+            <p><i class="fas fa-phone"></i> +91 72081 53358</p>
+            <p><i class="fas fa-envelope"></i> prathamenterprises36@gmail.com</p>
+            <p><i class="fas fa-map-marker-alt"></i> Navi Mumbai - 400706</p>
+            <div class="footer-social">
+                <a href="https://www.facebook.com/profile.php?id=100075809298604"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="https://wa.me/917208153358" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+            <p>&copy; 2026 Pratham Enterprises. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const property = urlParams.get("property");
+            if (property) {
+                document.getElementById("property").value = property;
+            }
+        });
+
+        function submitEnquiry(event) {
+            event.preventDefault();
+
+            const form = document.getElementById("enquiryForm");
+            const successMessage = document.getElementById("successMessage");
+            const errorMessage = document.getElementById("errorMessage");
+            const errorText = document.getElementById("errorText");
+
+            successMessage.style.display = "none";
+            errorMessage.style.display = "none";
+
+            const formData = {
+                name: document.getElementById("name").value,
+                phone: document.getElementById("phone").value,
+                email: document.getElementById("email").value,
+                requirement: document.getElementById("requirement").value,
+                property: document.getElementById("property").value,
+                description: document.getElementById("description").value
+            };
+
+            if (!/^[0-9]{10}$/.test(formData.phone)) {
+                alert("Please enter a valid 10-digit phone number");
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+                alert("Please enter a valid email address");
+                return;
+            }
+
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Submitting...";
+            submitBtn.disabled = true;
+
+            fetch("/submit-enquiry", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(async (response) => {
+                    const data = await response.json().catch(() => ({ message: "Unexpected server response." }));
+
+                    if (!response.ok) {
+                        throw new Error(data.message || "Something went wrong.");
+                    }
+
+                    form.style.display = "none";
+                    successMessage.style.display = "block";
+                    form.reset();
+                })
+                .catch((error) => {
+                    errorText.textContent = error.message || "Please try again.";
+                    errorMessage.style.display = "block";
+                })
+                .finally(() => {
+                    submitBtn.innerText = originalText;
+                    submitBtn.disabled = false;
+                });
+        }
+    </script>
+</body>
+</html>
