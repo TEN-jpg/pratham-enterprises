@@ -84,7 +84,7 @@ app.post("/submit-enquiry", async (req, res) => {
     try {
         await resend.emails.send({
             from: "onboarding@resend.dev",
-            to: OWNER_EMAIL,
+            to: "pratikbansod82@gmail.com",
             subject: `New Enquiry: ${safeProperty}`,
             text: [
                 `Name: ${name.trim()}`,
