@@ -61,6 +61,7 @@ function createTransporter() {
         host: "smtp.gmail.com",
         port: 587,
         secure: false,
+        family: 4,   // forces IPv4 instead of IPv6
         auth: {
             user: SMTP_USER,
             pass: SMTP_PASS
