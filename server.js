@@ -1,25 +1,20 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 function loadEnvFile() {
     const envPath = path.join(__dirname, ".env");
-    if (!fs.existsSync(envPath)) {
-        return;
-    }
+    if (!fs.existsSync(envPath)) return;
 
     const fileContent = fs.readFileSync(envPath, "utf8");
+
     fileContent.split(/\r?\n/).forEach((line) => {
         const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith("#")) {
-            return;
-        }
+        if (!trimmed || trimmed.startsWith("#")) return;
 
         const separatorIndex = trimmed.indexOf("=");
-        if (separatorIndex === -1) {
-            return;
-        }
+        if (separatorIndex === -1) return;
 
         const key = trimmed.slice(0, separatorIndex).trim();
         const value = trimmed.slice(separatorIndex + 1).trim();
@@ -35,10 +30,10 @@ loadEnvFile();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const OWNER_EMAIL = process.env.ENQUIRY_RECEIVER_EMAIL || "info@prathamenterprises.com";
-const SMTP_USER = process.env.SMTP_USER || "";
-const SMTP_PASS = process.env.SMTP_PASS || "";
-const SMTP_SERVICE = process.env.SMTP_SERVICE || "gmail";
+const OWNER_EMAIL =
+    process.env.ENQUIRY_RECEIVER_EMAIL || "info@prathamenterprises.com";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -50,26 +45,6 @@ function isValidEmail(email) {
 
 function isValidPhone(phone) {
     return /^[0-9]{10}$/.test(phone);
-}
-
-function createTransporter() {
-    if (!SMTP_USER || !SMTP_PASS) {
-        return null;
-    }
-
-    return nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
-        requireTLS: true,
-        auth: {
-            user: SMTP_USER,
-            pass: SMTP_PASS
-        },
-        tls: {
-            family: 4
-        }
-    });
 }
 
 app.post("/submit-enquiry", async (req, res) => {
@@ -87,48 +62,50 @@ app.post("/submit-enquiry", async (req, res) => {
     }
 
     if (!isValidPhone(phone.trim())) {
-        return res.status(400).json({ message: "Please enter a valid 10-digit phone number." });
+        return res
+            .status(400)
+            .json({ message: "Please enter a valid 10-digit phone number." });
     }
 
     if (!isValidEmail(email.trim())) {
-        return res.status(400).json({ message: "Please enter a valid email address." });
+        return res
+            .status(400)
+            .json({ message: "Please enter a valid email address." });
     }
 
     if (!requirement.trim()) {
-        return res.status(400).json({ message: "Please select your requirement." });
-    }
-
-    const transporter = createTransporter();
-
-    if (!transporter) {
-        return res.status(500).json({
-            message: "Email service is not configured yet. Add SMTP_USER and SMTP_PASS in the server environment."
-        });
+        return res
+            .status(400)
+            .json({ message: "Please select your requirement." });
     }
 
     const safeProperty = property.trim() || "General Enquiry";
 
-    const mailOptions = {
-        from: SMTP_USER,
-        replyTo: email.trim(),
-        to: OWNER_EMAIL,
-        subject: `New Enquiry: ${safeProperty}`,
-        text: [
-            `Name: ${name.trim()}`,
-            `Phone: ${phone.trim()}`,
-            `Email: ${email.trim()}`,
-            `Requirement: ${requirement.trim()}`,
-            `Property: ${safeProperty}`,
-            `Message: ${description.trim() || "No additional message provided."}`
-        ].join("\n")
-    };
-
     try {
-        await transporter.sendMail(mailOptions);
-        return res.status(200).json({ message: "Enquiry sent successfully." });
+        await resend.emails.send({
+            from: "onboarding@resend.dev",
+            to: OWNER_EMAIL,
+            subject: `New Enquiry: ${safeProperty}`,
+            text: [
+                `Name: ${name.trim()}`,
+                `Phone: ${phone.trim()}`,
+                `Email: ${email.trim()}`,
+                `Requirement: ${requirement.trim()}`,
+                `Property: ${safeProperty}`,
+                `Message: ${
+                    description.trim() || "No additional message provided."
+                }`
+            ].join("\n")
+        });
+
+        return res
+            .status(200)
+            .json({ message: "Enquiry sent successfully." });
     } catch (error) {
         console.error("Failed to send enquiry email:", error);
-        return res.status(500).json({ message: "We could not send your enquiry right now. Please try again." });
+        return res.status(500).json({
+            message: "We could not send your enquiry right now. Please try again."
+        });
     }
 });
 
