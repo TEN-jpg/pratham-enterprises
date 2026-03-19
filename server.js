@@ -1,35 +1,9 @@
-import dotenv from "dotenv";
-dotenv.config();
+require("dotenv").config();
 const express = require("express");
-const fs = require("fs");
 const path = require("path");
 const { Resend } = require("resend");
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-
-function loadEnvFile() {
-    const envPath = path.join(__dirname, ".env");
-    if (!fs.existsSync(envPath)) return;
-
-    const fileContent = fs.readFileSync(envPath, "utf8");
-
-    fileContent.split(/\r?\n/).forEach((line) => {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith("#")) return;
-
-        const separatorIndex = trimmed.indexOf("=");
-        if (separatorIndex === -1) return;
-
-        const key = trimmed.slice(0, separatorIndex).trim();
-        const value = trimmed.slice(separatorIndex + 1).trim();
-
-        if (key && !process.env[key]) {
-            process.env[key] = value;
-        }
-    });
-}
-
-loadEnvFile();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
