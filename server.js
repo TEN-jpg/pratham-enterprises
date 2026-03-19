@@ -110,33 +110,30 @@ app.post("/submit-enquiry", async (req, res) => {
 });
 
 app.post("/track-property-view", async (req, res) => {
-    const {
-        propertyName = "",
-        viewerPhone = ""
-    } = req.body;
+    const { propertyName, viewerPhone } = req.body;
 
-    if (!propertyName.trim()) {
-        return res.status(400).json({ message: "Property name is required." });
-    }
-
-    if (!isValidPhone(viewerPhone.trim())) {
-        return res.status(400).json({ message: "A valid viewer phone number is required." });
-    }
+    const message = `
+🚀 New Property View
+🏠 Property: ${propertyName}
+📞 Phone: ${viewerPhone}
+`;
 
     try {
-        await resend.emails.send({
-            from: "onboarding@resend.dev",
-            to: OWNER_EMAIL,
-            subject: `Property View Alert: ${propertyName.trim()}`,
-            text: [
-                `Name of Property: ${propertyName.trim()}`,
-                `Viewer's Phone Number: ${viewerPhone.trim()}`
-            ].join("\n")
+        await fetch(`https://api.telegram.org/bot8745773252:AAFwA74caPxeEVI2Hw039IIVhJWeq03O8GM/sendMessage`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                chat_id: YOUR_CHAT_ID,
+                text: message
+            })
         });
-        return res.status(200).json({ message: "Property view notification sent." });
-    } catch (error) {
-        console.error("Failed to send property view notification:", error);
-        return res.status(500).json({ message: "We could not send the property view notification." });
+
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Telegram failed" });
     }
 });
 
