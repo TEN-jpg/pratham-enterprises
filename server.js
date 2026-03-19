@@ -2,6 +2,8 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const { Resend } = require("resend");
+const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 function loadEnvFile() {
     const envPath = path.join(__dirname, ".env");
@@ -119,13 +121,13 @@ app.post("/track-property-view", async (req, res) => {
 `;
 
     try {
-        const tgRes = await fetch(`https://api.telegram.org/bot8745773252:AAFwA74caPxeEVI2Hw039IIVhJWeq03O8GM/sendMessage`, {
+        const tgRes = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                chat_id: 5469844153,
+                chat_id: CHAT_ID,
                 text: message
             })
         });
