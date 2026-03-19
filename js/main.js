@@ -77,9 +77,6 @@
 
         fetch("https://webhook.site/4e56b91f-0067-40bb-87f5-6a35208e466d", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify({
                 propertyName: property.title,
                 viewerPhone: viewerPhone
