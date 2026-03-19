@@ -119,16 +119,19 @@ app.post("/track-property-view", async (req, res) => {
 `;
 
     try {
-        await fetch(`https://api.telegram.org/bot8745773252:AAFwA74caPxeEVI2Hw039IIVhJWeq03O8GM/sendMessage`, {
+        const tgRes = await fetch(`https://api.telegram.org/bot8745773252:AAFwA74caPxeEVI2Hw039IIVhJWeq03O8GM/sendMessage`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                chat_id: YOUR_CHAT_ID,
+                chat_id: 5469844153,
                 text: message
             })
         });
+
+        const data = await tgRes.json();
+        console.log("Telegram response:", data);
 
         res.status(200).json({ success: true });
     } catch (err) {
