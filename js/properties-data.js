@@ -140,6 +140,40 @@ window.PROPERTY_CATALOG = [
         featured: false
     },
     {
+        id: "bungalow-lonavala",
+        title: "Premium Hillview Bungalow",
+        category: "bungalow",
+        categoryLabel: "Bungalows",
+        listingType: "sale",
+        listingLabel: "For Sale",
+        price: "Rs. 1,85,00,000",
+        priceValue: 18500000,
+        location: "Lonavala, Pune",
+        image: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        description: "Independent bungalow with landscaped lawn, private parking, and scenic hill views.",
+        featured: false,
+        media: [
+            {
+                type: "image",
+                src: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                alt: "Bungalow exterior view"
+            },
+            {
+                type: "image",
+                src: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                alt: "Bungalow living room"
+            }
+        ],
+        details: {
+            area: "3200 sq. ft.",
+            status: "Ready to move",
+            furnishing: "Semi-furnished",
+            facing: "Valley-facing",
+            overview: "A spacious bungalow for families seeking privacy, open outdoor space, and a premium weekend-home or primary residence setting.",
+            highlights: ["Independent gated bungalow", "Private lawn and terrace", "Covered parking and servant room"]
+        }
+    },
+    {
         id: "coworking-suite-pune",
         title: "Managed Office Suite",
         category: "commercial",
@@ -236,5 +270,10 @@ window.PROPERTY_CATEGORIES = [
         id: "plots",
         label: "Plots and Land",
         description: "Ready-to-build plots in developing areas with strong future potential."
+    },
+    {
+        id: "bungalow",
+        label: "Bungalows",
+        description: "Independent bungalows with private open space and premium family layouts."
     }
 ];

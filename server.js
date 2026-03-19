@@ -109,6 +109,37 @@ app.post("/submit-enquiry", async (req, res) => {
     }
 });
 
+app.post("/track-property-view", async (req, res) => {
+    const {
+        propertyName = "",
+        viewerPhone = ""
+    } = req.body;
+
+    if (!propertyName.trim()) {
+        return res.status(400).json({ message: "Property name is required." });
+    }
+
+    if (!isValidPhone(viewerPhone.trim())) {
+        return res.status(400).json({ message: "A valid viewer phone number is required." });
+    }
+
+    try {
+        await resend.emails.send({
+            from: "onboarding@resend.dev",
+            to: OWNER_EMAIL,
+            subject: `Property View Alert: ${propertyName.trim()}`,
+            text: [
+                `Name of Property: ${propertyName.trim()}`,
+                `Viewer's Phone Number: ${viewerPhone.trim()}`
+            ].join("\n")
+        });
+        return res.status(200).json({ message: "Property view notification sent." });
+    } catch (error) {
+        console.error("Failed to send property view notification:", error);
+        return res.status(500).json({ message: "We could not send the property view notification." });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

@@ -1,5 +1,6 @@
 (function () {
     const CONTACT_PHONE = "+917208153358";
+    const VIEWER_PHONE_KEY = "pe_viewer_phone";
     const rawProperties = Array.isArray(window.PROPERTY_CATALOG) ? window.PROPERTY_CATALOG : [];
     const categories = Array.isArray(window.PROPERTY_CATEGORIES) ? window.PROPERTY_CATEGORIES : [];
 
@@ -25,8 +26,13 @@
     const pageState = {
         category: "all",
         query: "",
-        sort: "featured"
+        sort: "featured",
+        expanded: false
     };
+
+    const DEFAULT_PROPERTY_LIMIT = 6;
+    let phoneGateModal = null;
+    let phoneGateSubmitHandler = null;
 
     function matchesSearch(item) {
         const query = pageState.query.trim().toLowerCase();
@@ -44,6 +50,50 @@
         ].join(" ").toLowerCase();
 
         return haystack.includes(query);
+    }
+
+    function getStoredViewerPhone() {
+        return window.localStorage.getItem(VIEWER_PHONE_KEY) || "";
+    }
+
+    function hasViewerPhone() {
+        return /^[0-9]{10}$/.test(getStoredViewerPhone());
+    }
+
+    function saveViewerPhone(phone) {
+        window.localStorage.setItem(VIEWER_PHONE_KEY, phone);
+    }
+
+    function notifyPropertyView(property) {
+        const viewerPhone = getStoredViewerPhone();
+        if (!property || !/^[0-9]{10}$/.test(viewerPhone)) {
+            return;
+        }
+
+        const trackingKey = `pe_view_notified_${property.id}`;
+        if (window.sessionStorage.getItem(trackingKey)) {
+            return;
+        }
+
+        fetch("/track-property-view", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                propertyName: property.title,
+                viewerPhone
+            })
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Tracking failed");
+                }
+                window.sessionStorage.setItem(trackingKey, "1");
+            })
+            .catch(() => {
+                // Property view tracking should not block the user from seeing the page.
+            });
     }
 
     function getSortFunction(sortBy) {
@@ -119,6 +169,14 @@
 
         const { limit = null, featuredOnly = false } = options;
         let items = getProperties({ featuredOnly, ignorePageFilters: featuredOnly });
+        const totalItems = items.length;
+
+        if (!featuredOnly && limit === null) {
+            const shouldLimit = !pageState.expanded && totalItems > DEFAULT_PROPERTY_LIMIT;
+            if (shouldLimit) {
+                items = items.slice(0, DEFAULT_PROPERTY_LIMIT);
+            }
+        }
 
         if (typeof limit === "number") {
             items = items.slice(0, limit);
@@ -130,8 +188,32 @@
 
         const counter = document.getElementById("property-results-count");
         if (counter && !featuredOnly) {
-            counter.textContent = `${items.length} propert${items.length === 1 ? "y" : "ies"} found`;
+            counter.textContent = `${totalItems} propert${totalItems === 1 ? "y" : "ies"} found`;
         }
+
+        renderPropertyGridActions(totalItems, items.length, featuredOnly);
+    }
+
+    function renderPropertyGridActions(totalItems, visibleItems, featuredOnly) {
+        const actions = document.getElementById("property-grid-actions");
+        if (!actions || featuredOnly) {
+            return;
+        }
+
+        if (totalItems <= DEFAULT_PROPERTY_LIMIT) {
+            actions.innerHTML = "";
+            return;
+        }
+
+        const buttonLabel = pageState.expanded
+            ? "Show Less"
+            : `Show More (${totalItems - visibleItems} more)`;
+
+        actions.innerHTML = `
+            <button class="btn property-toggle-btn" type="button" data-toggle-properties>
+                ${buttonLabel}
+            </button>
+        `;
     }
 
     function renderCategoryButtons() {
@@ -163,6 +245,7 @@
     }
 
     function applyFilters() {
+        pageState.expanded = false;
         renderCategoryButtons();
         updateCategoryCards();
         renderPropertyGrid("all-properties");
@@ -170,6 +253,15 @@
 
     function attachPropertyActions() {
         document.addEventListener("click", (event) => {
+            const propertyLink = event.target.closest('a[href*="property-details.html"]');
+            if (propertyLink && !hasViewerPhone()) {
+                event.preventDefault();
+                openPhoneGate(() => {
+                    window.location.href = propertyLink.href;
+                });
+                return;
+            }
+
             const enquireButton = event.target.closest("[data-enquire]");
             if (enquireButton) {
                 const propertyName = enquireButton.getAttribute("data-enquire");
@@ -178,18 +270,26 @@
             }
 
             const categoryButton = event.target.closest("[data-category]");
-            if (!categoryButton) {
+            if (categoryButton) {
+                const category = categoryButton.getAttribute("data-category");
+                if (!category || category === pageState.category) {
+                    return;
+                }
+
+                pageState.category = category;
+                applyFilters();
+                document.getElementById("all-properties")?.scrollIntoView({ behavior: "smooth", block: "start" });
                 return;
             }
 
-            const category = categoryButton.getAttribute("data-category");
-            if (!category || category === pageState.category) {
-                return;
+            const toggleButton = event.target.closest("[data-toggle-properties]");
+            if (toggleButton) {
+                pageState.expanded = !pageState.expanded;
+                renderPropertyGrid("all-properties");
+                if (!pageState.expanded) {
+                    document.getElementById("all-properties")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
             }
-
-            pageState.category = category;
-            applyFilters();
-            document.getElementById("all-properties")?.scrollIntoView({ behavior: "smooth", block: "start" });
         });
     }
 
@@ -200,6 +300,7 @@
         if (searchInput) {
             searchInput.addEventListener("input", (event) => {
                 pageState.query = event.target.value;
+                pageState.expanded = false;
                 renderPropertyGrid("all-properties");
             });
         }
@@ -207,6 +308,7 @@
         if (sortSelect) {
             sortSelect.addEventListener("change", (event) => {
                 pageState.sort = event.target.value;
+                pageState.expanded = false;
                 renderPropertyGrid("all-properties");
             });
         }
@@ -422,6 +524,91 @@
         `;
 
         initPropertyGallery();
+        notifyPropertyView(property);
+    }
+
+    function ensurePhoneGateModal() {
+        if (phoneGateModal) {
+            return phoneGateModal;
+        }
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "phone-gate-overlay hidden";
+        wrapper.innerHTML = `
+            <div class="phone-gate-dialog">
+                <h2>View Property Details</h2>
+                <p>Enter your phone number once to continue. After that, you can open any property without entering it again.</p>
+                <form id="phoneGateForm" class="phone-gate-form">
+                    <label for="phoneGateInput">Phone Number</label>
+                    <input id="phoneGateInput" type="tel" inputmode="numeric" maxlength="10" placeholder="Enter 10-digit phone number" required>
+                    <p id="phoneGateError" class="phone-gate-error hidden">Please enter a valid 10-digit phone number.</p>
+                    <button class="btn" type="submit">Continue</button>
+                </form>
+            </div>
+        `;
+
+        document.body.appendChild(wrapper);
+        phoneGateModal = wrapper;
+
+        const form = wrapper.querySelector("#phoneGateForm");
+        const input = wrapper.querySelector("#phoneGateInput");
+        const error = wrapper.querySelector("#phoneGateError");
+
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const value = input.value.trim();
+
+            if (!/^[0-9]{10}$/.test(value)) {
+                error.classList.remove("hidden");
+                return;
+            }
+
+            error.classList.add("hidden");
+            saveViewerPhone(value);
+            closePhoneGate();
+
+            if (typeof phoneGateSubmitHandler === "function") {
+                const callback = phoneGateSubmitHandler;
+                phoneGateSubmitHandler = null;
+                callback(value);
+            }
+        });
+
+        return wrapper;
+    }
+
+    function openPhoneGate(onSuccess) {
+        const modal = ensurePhoneGateModal();
+        phoneGateSubmitHandler = onSuccess || null;
+        modal.classList.remove("hidden");
+        document.body.classList.add("phone-gate-open");
+        modal.querySelector("#phoneGateInput")?.focus();
+    }
+
+    function closePhoneGate() {
+        if (!phoneGateModal) {
+            return;
+        }
+
+        phoneGateModal.classList.add("hidden");
+        document.body.classList.remove("phone-gate-open");
+    }
+
+    function initPropertyAccessGate() {
+        const detailRoot = document.getElementById("property-detail-root");
+        if (!detailRoot) {
+            return true;
+        }
+
+        if (hasViewerPhone()) {
+            return true;
+        }
+
+        openPhoneGate(() => {
+            renderPropertyDetail();
+        });
+
+        return false;
     }
 
     function initPropertyGallery() {
@@ -485,7 +672,9 @@
         renderCategoryButtons();
         updateCategoryCards();
         renderPropertyGrid("all-properties");
-        renderPropertyDetail();
+        if (initPropertyAccessGate()) {
+            renderPropertyDetail();
+        }
         initMobileActionBarVisibility();
         attachPropertyActions();
         attachPropertyToolbar();

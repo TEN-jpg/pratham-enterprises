@@ -1,8 +1,3 @@
-/* ============================================
-   PRATHAM ENTERPRISES - REAL ESTATE WEBSITE
-   Professional Red/Black/White Theme
-   ============================================ */
-
 /* --- CSS Variables & Reset --- */
 :root {
     --primary-red: #D32F2F;
@@ -53,9 +48,8 @@ img {
     display: block;
 }
 
-/* ============================================
-   NAVIGATION BAR
-   ============================================ */
+/* NAVIGATION BAR */
+
 nav {
     background: rgba(26, 26, 26, 0.95);
     backdrop-filter: blur(10px);
@@ -138,6 +132,7 @@ nav.scrolled {
 }
 
 /* Mobile Menu Toggle */
+
 .menu-toggle {
     display: none;
     flex-direction: column;
@@ -169,9 +164,8 @@ nav.scrolled {
     transform: translateY(-8px) rotate(-45deg);
 }
 
-/* ============================================
-   HERO SECTION
-   ============================================ */
+/* HERO SECTION */
+
 .hero {
     background: linear-gradient(135deg, 
         rgba(0, 0, 0, 0.85) 0%,
@@ -234,9 +228,8 @@ nav.scrolled {
     animation: fadeInUp 1s ease 0.6s backwards;
 }
 
-/* ============================================
-   BUTTONS
-   ============================================ */
+/* BUTTONS */
+
 .btn {
     padding: 15px 40px;
     background: var(--primary-red);
@@ -289,9 +282,8 @@ nav.scrolled {
     color: var(--dark-black);
 }
 
-/* ============================================
-   STATISTICS BAR
-   ============================================ */
+/* STATISTICS BAR */
+
 .stats-bar {
     background: var(--dark-black);
     color: var(--white);
@@ -358,9 +350,8 @@ nav.scrolled {
     font-weight: 500;
 }
 
-/* ============================================
-   SECTION TITLES
-   ============================================ */
+/* SECTION TITLES */
+
 .section-title {
     text-align: center;
     margin: 60px 0 40px;
@@ -380,9 +371,8 @@ nav.scrolled {
     border-radius: 2px;
 }
 
-/* ============================================
-   PROPERTY CARDS
-   ============================================ */
+/* PROPERTY CARDS */
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -548,9 +538,8 @@ nav.scrolled {
     color: var(--primary-dark);
 }
 
-/* ============================================
-   PROPERTY INFO SECTION
-   ============================================ */
+/* PROPERTY INFO SECTION */
+
 .property-info-section {
     background: var(--white);
     padding: 80px 0;
@@ -810,9 +799,8 @@ nav.scrolled {
     background: var(--dark-black);
 }
 
-/* ============================================
-   ENQUIRY FORM
-   ============================================ */
+/* ENQUIRY FORM */
+
 .form-container {
     max-width: 700px;
     margin: 60px auto;
@@ -876,6 +864,7 @@ nav.scrolled {
 }
 
 /* Success Message */
+
 .success-message {
     display: none;
     text-align: center;
@@ -898,9 +887,8 @@ nav.scrolled {
     margin-bottom: 20px;
 }
 
-/* ============================================
-   FOOTER
-   ============================================ */
+/* FOOTER */
+
 footer {
     background: var(--dark-black);
     color: var(--white);
@@ -972,9 +960,8 @@ footer::before {
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* ============================================
-   ANIMATIONS
-   ============================================ */
+/* ANIMATIONS */
+
 @keyframes fadeInDown {
     from {
         opacity: 0;
@@ -1074,9 +1061,8 @@ footer::before {
     }
 }
 
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
+/* RESPONSIVE DESIGN */
+
 @media (max-width: 768px) {
     nav {
         flex-wrap: wrap;
@@ -1348,9 +1334,8 @@ footer::before {
     }
 }
 
-/* ============================================
-   SCROLLBAR STYLING
-   ============================================ */
+/* SCROLLBAR STYLING*/
+
 ::-webkit-scrollbar {
     width: 10px;
 }
@@ -1368,9 +1353,8 @@ footer::before {
     background: var(--primary-dark);
 }
 
-/* ============================================
-   LOADING SPINNER
-   ============================================ */
+/* LOADING SPINNER */
+
 .spinner {
     display: inline-block;
     width: 20px;
@@ -1387,9 +1371,8 @@ footer::before {
     }
 }
 
-/* ============================================
-   LOADING STATE
-   ============================================ */
+/* LOADING STATE */
+
 .btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -1399,9 +1382,8 @@ footer::before {
     display: none;
 }
 
-/* ============================================
-   HOVER EFFECTS
-   ============================================ */
+/* HOVER EFFECTS */
+
 .card:hover .card-badge {
     transform: scale(1.1);
 }
@@ -1414,9 +1396,8 @@ footer::before {
     animation: pulse 0.5s ease;
 }
 
-/* ============================================
-   UTILITY CLASSES
-   ============================================ */
+/* UTILITY CLASSES */
+
 .text-center {
     text-align: center;
 }
@@ -1445,9 +1426,68 @@ footer::before {
     display: none;
 }
 
-/* ============================================
-   PRINT STYLES
-   ============================================ */
+body.phone-gate-open {
+    overflow: hidden;
+}
+
+.phone-gate-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 2000;
+}
+
+.phone-gate-dialog {
+    width: min(100%, 440px);
+    background: var(--white);
+    border-radius: 20px;
+    padding: 32px 28px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.24);
+    text-align: left;
+}
+
+.phone-gate-dialog h2 {
+    margin-bottom: 10px;
+    color: var(--dark-black);
+}
+
+.phone-gate-dialog p {
+    color: var(--text-light);
+    margin-bottom: 18px;
+}
+
+.phone-gate-form label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.phone-gate-form input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-size: 1rem;
+    margin-bottom: 14px;
+}
+
+.phone-gate-form input:focus {
+    outline: none;
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.12);
+}
+
+.phone-gate-error {
+    color: #b91c1c;
+    margin-bottom: 14px;
+}
+
+/* PRINT STYLES */
+
 @media print {
     nav,
     .hero,
@@ -1466,9 +1506,8 @@ footer::before {
     }
 }
 
-/* ============================================
-   PROPERTY FILTER UI
-   ============================================ */
+/* PROPERTY FILTER UI */
+
 .section-title-left {
     text-align: left;
     margin: 0 0 10px;
@@ -1527,6 +1566,21 @@ footer::before {
     gap: 12px;
     justify-content: center;
     margin-bottom: 35px;
+}
+
+.property-filter-row {
+    justify-content: flex-start;
+    margin-bottom: 28px;
+}
+
+.property-grid-actions {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0 20px;
+}
+
+.property-toggle-btn {
+    min-width: 190px;
 }
 
 .category-filter {
@@ -1619,6 +1673,10 @@ button.info-card {
 
     .toolbar-field {
         width: 100%;
+    }
+
+    .property-filter-row {
+        justify-content: center;
     }
 }
 
