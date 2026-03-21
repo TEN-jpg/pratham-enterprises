@@ -1,27 +1,8 @@
 (function () {
     const CONTACT_PHONE = "+917208153358";
     const VIEWER_PHONE_KEY = "pe_viewer_phone";
-    const rawProperties = Array.isArray(window.PROPERTY_CATALOG) ? window.PROPERTY_CATALOG : [];
-    const categories = Array.isArray(window.PROPERTY_CATEGORIES) ? window.PROPERTY_CATEGORIES : [];
-
-    const properties = rawProperties.map((item, index) => ({
-        ...item,
-        index,
-        detailUrl: `property-details.html?property=${index}`,
-        media: Array.isArray(item.media) && item.media.length
-            ? item.media
-            : [{ type: "image", src: item.image, alt: item.title }],
-        details: {
-            area: item.details?.area || "Custom area available on request",
-            status: item.details?.status || "Ready to move",
-            furnishing: item.details?.furnishing || "Details on request",
-            facing: item.details?.facing || "Best suited frontage",
-            overview: item.details?.overview || item.description,
-            highlights: Array.isArray(item.details?.highlights) && item.details.highlights.length
-                ? item.details.highlights
-                : ["Prime location", "Verified listing", "Enquiry support available"]
-        }
-    }));
+    let properties = [];
+    let categories = [];
 
     const pageState = {
         category: "all",
@@ -33,6 +14,43 @@
     const DEFAULT_PROPERTY_LIMIT = 6;
     let phoneGateModal = null;
     let phoneGateSubmitHandler = null;
+
+    function normalizeProperties(rawProperties) {
+        return rawProperties.map((item, index) => ({
+            ...item,
+            index,
+            detailUrl: `property-details.html?property=${index}`,
+            media: Array.isArray(item.media) && item.media.length
+                ? item.media
+                : [{ type: "image", src: item.image, alt: item.title }],
+            details: {
+                area: item.details?.area || "Custom area available on request",
+                status: item.details?.status || "Ready to move",
+                furnishing: item.details?.furnishing || "Details on request",
+                facing: item.details?.facing || "Best suited frontage",
+                overview: item.details?.overview || item.description,
+                highlights: Array.isArray(item.details?.highlights) && item.details.highlights.length
+                    ? item.details.highlights
+                    : ["Prime location", "Verified listing", "Enquiry support available"]
+            }
+        }));
+    }
+
+    async function loadPropertyData() {
+        const response = await fetch("properties.json", {
+            headers: {
+                Accept: "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to load property data.");
+        }
+
+        const data = await response.json();
+        properties = normalizeProperties(Array.isArray(data.properties) ? data.properties : []);
+        categories = Array.isArray(data.categories) ? data.categories : [];
+    }
 
     function matchesSearch(item) {
         const query = pageState.query.trim().toLowerCase();
@@ -537,7 +555,7 @@
         wrapper.innerHTML = `
             <div class="phone-gate-dialog">
                 <h2>View Property Details</h2>
-                <p>Enter your phone number once to continue. After that, you can open any property without entering it again.</p>
+                <p>Enter your phone number</p>
                 <form id="phoneGateForm" class="phone-gate-form">
                     <label for="phoneGateInput">Phone Number</label>
                     <input id="phoneGateInput" type="tel" inputmode="numeric" maxlength="10" placeholder="Enter 10-digit phone number" required>
@@ -666,18 +684,49 @@
         observer.observe(footer);
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
         initMobileNav();
-        renderPropertyGrid("featured-properties", { limit: 3, featuredOnly: true });
-        renderCategoryButtons();
-        updateCategoryCards();
-        renderPropertyGrid("all-properties");
-        if (initPropertyAccessGate()) {
-            renderPropertyDetail();
-        }
-        initMobileActionBarVisibility();
         attachPropertyActions();
         attachPropertyToolbar();
         initStatsObserver();
+
+        const needsPropertyData = Boolean(
+            document.getElementById("featured-properties")
+            || document.getElementById("all-properties")
+            || document.getElementById("property-detail-root")
+            || document.getElementById("property-category-buttons")
+        );
+
+        if (!needsPropertyData) {
+            return;
+        }
+
+        try {
+            await loadPropertyData();
+            renderPropertyGrid("featured-properties", { limit: 3, featuredOnly: true });
+            renderCategoryButtons();
+            updateCategoryCards();
+            renderPropertyGrid("all-properties");
+            if (initPropertyAccessGate()) {
+                renderPropertyDetail();
+            }
+            initMobileActionBarVisibility();
+        } catch (error) {
+            console.error("Failed to initialize property catalog:", error);
+            const targets = ["featured-properties", "all-properties", "property-detail-root"];
+            targets.forEach((id) => {
+                const container = document.getElementById(id);
+                if (!container) {
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Properties are unavailable right now</h3>
+                        <p>Please refresh the page and try again.</p>
+                    </div>
+                `;
+            });
+        }
     });
 })();
