@@ -203,94 +203,32 @@
             "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
             "description": "Plug-and-play office suite with meeting rooms, reception services, and dedicated parking.",
             "featured": false
-        },
-        {
-            "id": "coworking-suite-pune",
-            "title": "Managed Office Suite",
-            "category": "commercial",
-            "categoryLabel": "Commercial Offices",
-            "listingType": "rent",
-            "listingLabel": "For Rent",
-            "price": "Rs. 75,000 / month",
-            "priceValue": 75000,
-            "location": "Hinjewadi, Pune",
-            "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            "description": "Plug-and-play office suite with meeting rooms, reception services, and dedicated parking.",
-            "featured": false
-        },
-        {
-            "id": "coworking-suite-pune",
-            "title": "Managed Office Suite",
-            "category": "commercial",
-            "categoryLabel": "Commercial Offices",
-            "listingType": "rent",
-            "listingLabel": "For Rent",
-            "price": "Rs. 75,000 / month",
-            "priceValue": 75000,
-            "location": "Hinjewadi, Pune",
-            "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            "description": "Plug-and-play office suite with meeting rooms, reception services, and dedicated parking.",
-            "featured": false
-        },
-        {
-            "id": "coworking-suite-pune",
-            "title": "Managed Office Suite",
-            "category": "commercial",
-            "categoryLabel": "Commercial Offices",
-            "listingType": "rent",
-            "listingLabel": "For Rent",
-            "price": "Rs. 75,000 / month",
-            "priceValue": 75000,
-            "location": "Hinjewadi, Pune",
-            "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            "description": "Plug-and-play office suite with meeting rooms, reception services, and dedicated parking.",
-            "featured": false
-        },
-        {
-            "id": "coworking-suite-pune",
-            "title": "Managed Office Suite",
-            "category": "commercial",
-            "categoryLabel": "Commercial Offices",
-            "listingType": "rent",
-            "listingLabel": "For Rent",
-            "price": "Rs. 75,000 / month",
-            "priceValue": 75000,
-            "location": "Hinjewadi, Pune",
-            "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-            "description": "Plug-and-play office suite with meeting rooms, reception services, and dedicated parking.",
-            "featured": false
         }
     ],
     "categories": [
         {
             "id": "all",
-            "label": "All Properties",
-            "description": "View the complete property catalog."
+            "label": "All Properties"
         },
         {
             "id": "commercial",
-            "label": "Commercial Offices",
-            "description": "Modern office spaces in prime business districts with all amenities."
+            "label": "Commercial Offices"
         },
         {
             "id": "residential",
-            "label": "Residential Flats",
-            "description": "Apartments ranging from compact homes to premium family residences."
+            "label": "Residential Flats"
         },
         {
             "id": "retail",
-            "label": "Shops and Retail",
-            "description": "High-visibility retail spaces for storefront and service businesses."
+            "label": "Shops and Retail"
         },
         {
             "id": "plots",
-            "label": "Plots and Land",
-            "description": "Ready-to-build plots in developing areas with strong future potential."
+            "label": "Plots and Land"
         },
         {
             "id": "bungalow",
-            "label": "Bungalows",
-            "description": "Independent bungalows with private open space and premium family layouts."
+            "label": "Bungalows"
         }
     ]
 }

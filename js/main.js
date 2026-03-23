@@ -15,6 +15,7 @@
     let phoneGateModal = null;
     let phoneGateSubmitHandler = null;
 
+    // Normalizes raw property records so rendering always has fallback media, details, and URLs.
     function normalizeProperties(rawProperties) {
         return rawProperties.map((item, index) => ({
             ...item,
@@ -36,6 +37,7 @@
         }));
     }
 
+    // Fetches the property catalog and category list from properties.json.
     async function loadPropertyData() {
         const response = await fetch("properties.json", {
             headers: {
@@ -52,6 +54,7 @@
         categories = Array.isArray(data.categories) ? data.categories : [];
     }
 
+    // Checks whether a property matches the current free-text search query.
     function matchesSearch(item) {
         const query = pageState.query.trim().toLowerCase();
         if (!query) {
@@ -70,18 +73,22 @@
         return haystack.includes(query);
     }
 
+    // Reads the visitor phone number saved after the one-time access gate.
     function getStoredViewerPhone() {
         return window.localStorage.getItem(VIEWER_PHONE_KEY) || "";
     }
 
+    // Tells us whether the saved viewer phone number is valid enough to skip the gate.
     function hasViewerPhone() {
         return /^[0-9]{10}$/.test(getStoredViewerPhone());
     }
 
+    // Stores the viewer phone number so they can open other properties without re-entering it.
     function saveViewerPhone(phone) {
         window.localStorage.setItem(VIEWER_PHONE_KEY, phone);
     }
 
+    // Sends a one-time property-view notification for the current browser session.
     function notifyPropertyView(property) {
         const viewerPhone = getStoredViewerPhone();
         if (!property || !/^[0-9]{10}$/.test(viewerPhone)) {
@@ -114,6 +121,7 @@
             });
     }
 
+    // Returns the sort function that matches the selected property sorting option.
     function getSortFunction(sortBy) {
         switch (sortBy) {
             case "price-low":
@@ -130,6 +138,7 @@
         }
     }
 
+    // Builds the current property list after applying featured mode, filters, search, and sorting.
     function getProperties(options = {}) {
         const { featuredOnly = false, ignorePageFilters = false } = options;
         const source = featuredOnly ? properties.filter((item) => item.featured) : properties.slice();
@@ -144,9 +153,10 @@
             .sort(getSortFunction(pageState.sort));
     }
 
+    // Creates the HTML markup for a single property card in the listing grid.
     function createPropertyCard(property, index) {
         return `
-            <article class="card card-clickable" style="animation-delay: ${index * 0.08}s">
+            <article class="card card-clickable">
                 <span class="card-badge">${property.listingLabel}</span>
                 <a href="${property.detailUrl}" class="card-media-link" aria-label="View details for ${property.title}">
                     <img src="${property.image}" alt="${property.title}" class="card-img">
@@ -170,6 +180,7 @@
         `;
     }
 
+    // Creates the fallback empty-state UI when no properties match the current filters.
     function createEmptyState() {
         return `
             <div class="empty-state">
@@ -179,6 +190,7 @@
         `;
     }
 
+    // Renders a property grid for the homepage or the full properties page.
     function renderPropertyGrid(containerId, options = {}) {
         const container = document.getElementById(containerId);
         if (!container) {
@@ -212,6 +224,7 @@
         renderPropertyGridActions(totalItems, items.length, featuredOnly);
     }
 
+    // Shows or hides the Show More / Show Less control based on the current list size.
     function renderPropertyGridActions(totalItems, visibleItems, featuredOnly) {
         const actions = document.getElementById("property-grid-actions");
         if (!actions || featuredOnly) {
@@ -234,6 +247,7 @@
         `;
     }
 
+    // Renders the category filter buttons using the category data from properties.json.
     function renderCategoryButtons() {
         const container = document.getElementById("property-category-buttons");
         if (!container || !categories.length) {
@@ -253,6 +267,7 @@
             .join("");
     }
 
+    // Keeps any category cards in sync with the active category selection.
     function updateCategoryCards() {
         const cards = document.querySelectorAll(".info-card[data-category]");
         cards.forEach((card) => {
@@ -262,6 +277,7 @@
         });
     }
 
+    // Re-renders the filtered property list after a category change.
     function applyFilters() {
         pageState.expanded = false;
         renderCategoryButtons();
@@ -269,6 +285,7 @@
         renderPropertyGrid("all-properties");
     }
 
+    // Handles delegated clicks for property links, enquiry buttons, category filters, and show-more controls.
     function attachPropertyActions() {
         document.addEventListener("click", (event) => {
             const propertyLink = event.target.closest('a[href*="property-details.html"]');
@@ -311,6 +328,7 @@
         });
     }
 
+    // Connects the search input and sort dropdown to the property grid.
     function attachPropertyToolbar() {
         const searchInput = document.getElementById("property-search");
         const sortSelect = document.getElementById("property-sort");
@@ -332,6 +350,7 @@
         }
     }
 
+    // Animates the statistics counters when the stats section becomes visible.
     function animateStats() {
         const counters = document.querySelectorAll(".stat-number");
         counters.forEach((counter) => {
@@ -354,6 +373,7 @@
         });
     }
 
+    // Starts the stats animation only when the stats bar scrolls into view.
     function initStatsObserver() {
         const statsSection = document.querySelector(".stats-bar");
         if (!statsSection || typeof IntersectionObserver !== "function") {
@@ -374,6 +394,7 @@
         observer.observe(statsSection);
     }
 
+    // Controls the mobile navigation toggle and closes the menu when needed.
     function initMobileNav() {
         const toggle = document.querySelector(".menu-toggle");
         const navLinks = document.querySelector(".nav-links");
@@ -405,6 +426,7 @@
         });
     }
 
+    // Reads the property index from the URL and returns the matching property record.
     function getPropertyFromUrl() {
         const root = document.getElementById("property-detail-root");
         if (!root) {
@@ -421,6 +443,7 @@
         return properties[propertyIndex];
     }
 
+    // Creates one slide for the property media gallery, supporting both images and videos.
     function createMediaSlide(item, isActive) {
         if (item.type === "video") {
             return `
@@ -439,6 +462,7 @@
         `;
     }
 
+    // Renders the full property details page for the selected property.
     function renderPropertyDetail() {
         const root = document.getElementById("property-detail-root");
         if (!root) {
@@ -545,6 +569,7 @@
         notifyPropertyView(property);
     }
 
+    // Builds the one-time phone gate modal and wires its submit behavior.
     function ensurePhoneGateModal() {
         if (phoneGateModal) {
             return phoneGateModal;
@@ -595,6 +620,7 @@
         return wrapper;
     }
 
+    // Opens the phone gate and runs a callback after the visitor submits a valid number.
     function openPhoneGate(onSuccess) {
         const modal = ensurePhoneGateModal();
         phoneGateSubmitHandler = onSuccess || null;
@@ -603,6 +629,7 @@
         modal.querySelector("#phoneGateInput")?.focus();
     }
 
+    // Closes the phone gate modal and restores page scrolling.
     function closePhoneGate() {
         if (!phoneGateModal) {
             return;
@@ -612,6 +639,7 @@
         document.body.classList.remove("phone-gate-open");
     }
 
+    // Blocks direct access to property details until the visitor provides their phone number once.
     function initPropertyAccessGate() {
         const detailRoot = document.getElementById("property-detail-root");
         if (!detailRoot) {
@@ -629,6 +657,7 @@
         return false;
     }
 
+    // Wires the next/previous controls for the property image and video gallery.
     function initPropertyGallery() {
         const slides = Array.from(document.querySelectorAll("[data-slide]"));
         const navButtons = Array.from(document.querySelectorAll("[data-gallery-nav]"));
@@ -665,6 +694,7 @@
         showSlide(0);
     }
 
+    // Hides the mobile action bar when the footer comes into view so it does not overlap it.
     function initMobileActionBarVisibility() {
         const actionBar = document.querySelector(".contact-action-bar");
         const footer = document.querySelector("footer");
@@ -684,6 +714,7 @@
         observer.observe(footer);
     }
 
+    // Initializes shared page behavior and loads property data only on pages that need it.
     document.addEventListener("DOMContentLoaded", async () => {
         initMobileNav();
         attachPropertyActions();
