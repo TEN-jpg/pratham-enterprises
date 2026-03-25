@@ -74,7 +74,6 @@ nav.scrolled {
 }
 
 .logo img {
-    display: block;
     height: 60px;
     width: auto;
     object-fit: contain;
@@ -90,7 +89,6 @@ nav.scrolled {
     color: var(--white);
     font-weight: 500;
     transition: var(--transition);
-    font-size: 1rem;
     position: relative;
 }
 
@@ -155,7 +153,6 @@ nav.scrolled {
         url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
     background-size: cover;
     background-position: center;
-    background-attachment: scroll   ;
     min-height: 90vh;
     display: flex;
     flex-direction: column;
@@ -178,7 +175,6 @@ nav.scrolled {
     background: linear-gradient(to top, var(--light-grey), transparent);
     pointer-events: none;
 }
-
 
 .hero h1 {
     font-size: 3.5rem;
@@ -236,7 +232,6 @@ nav.scrolled {
 
 .btn:active {
     transform: translateY(-2px);
-    overflow: hidden;
 }
 
 .btn-outline {
@@ -358,10 +353,6 @@ nav.scrolled {
     object-fit: cover;
 }
 
-.card:hover {
-    transform: scale(1.03);
-}
-
 .card-body {
     padding: 25px;
     display: flex;
@@ -440,17 +431,6 @@ nav.scrolled {
     flex-direction: column;
     gap: 14px;
     margin-top: auto;
-}
-
-.card-link {
-    display: inline-flex;
-    align-items: center;
-    font-weight: 600;
-    color: var(--primary-red);
-}
-
-.card-link:hover {
-    color: var(--primary-dark);
 }
 
 /* PROPERTY INFO SECTION */
@@ -1579,16 +1559,6 @@ body.phone-gate-open {
     margin-bottom: 28px;
 }
 
-.property-grid-actions {
-    display: flex;
-    justify-content: center;
-    margin: 10px 0 20px;
-}
-
-.property-toggle-btn {
-    min-width: 190px;
-}
-
 .category-filter {
     border: 1px solid rgba(211, 47, 47, 0.18);
     background: var(--white);
@@ -1620,19 +1590,6 @@ body.phone-gate-open {
 .card-category {
     font-weight: 600;
     color: var(--primary-red);
-}
-
-button.info-card {
-    width: 100%;
-    appearance: none;
-    cursor: pointer;
-    color: inherit;
-    font: inherit;
-}
-
-.info-card.active {
-    border-color: var(--primary-red);
-    background: #fff6f6;
 }
 
 .empty-state {
@@ -1688,7 +1645,6 @@ button.info-card {
         transform: translateY(0);
     }
 }
-
 
 @media (max-width: 768px) {
     .property-section-header {

@@ -176,7 +176,6 @@
 
             const restoredPropertyListState = restorePropertyListState();
             renderCategoryButtons();
-            updateCategoryCards();
             renderPropertyGrid("all-properties");
             focusRestoredPropertyCard(restoredPropertyListState);
         });
@@ -314,17 +313,6 @@
         if (counter && !featuredOnly) {
             counter.textContent = `${totalItems} propert${totalItems === 1 ? "y" : "ies"} found`;
         }
-
-        renderPropertyGridActions(totalItems, visibleItems.length, featuredOnly);
-    }
-
-    // Shows or hides the Show More / Show Less control based on the current list size.
-    function renderPropertyGridActions(totalItems, visibleItems, featuredOnly) {
-        const actions = document.getElementById("property-grid-actions");
-        if (!actions) {
-            return;
-        }
-        actions.innerHTML = "";
     }
 
     // Renders the category filter buttons using the category data from properties.json.
@@ -347,24 +335,13 @@
             .join("");
     }
 
-    // Keeps any category cards in sync with the active category selection.
-    function updateCategoryCards() {
-        const cards = document.querySelectorAll(".info-card[data-category]");
-        cards.forEach((card) => {
-            const matches = pageState.category === "all" || card.dataset.category === pageState.category;
-            card.classList.toggle("active", matches);
-            card.setAttribute("aria-pressed", matches ? "true" : "false");
-        });
-    }
-
     // Re-renders the filtered property list after a category change.
     function applyFilters() {
         renderCategoryButtons();
-        updateCategoryCards();
         renderPropertyGrid("all-properties");
     }
 
-    // Handles delegated clicks for property links, enquiry buttons, category filters, and show-more controls.
+    // Handles delegated clicks for property links, enquiry buttons, and category filters.
     function attachPropertyActions() {
         document.addEventListener("click", (event) => {
             const propertyCard = event.target.closest(".card-clickable[data-detail-url]");
@@ -896,7 +873,6 @@
             const restoredPropertyListState = restorePropertyListState();
             renderPropertyGrid("featured-properties", { limit: 3, featuredOnly: true });
             renderCategoryButtons();
-            updateCategoryCards();
             renderPropertyGrid("all-properties");
             focusRestoredPropertyCard(restoredPropertyListState);
             if (initPropertyAccessGate()) {
