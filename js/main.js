@@ -7,13 +7,12 @@
     const pageState = {
         category: "all",
         query: "",
-        sort: "featured",
-        expanded: false
+        sort: "featured"
     };
 
-    const DEFAULT_PROPERTY_LIMIT = 6;
     let phoneGateModal = null;
     let phoneGateSubmitHandler = null;
+    const PROPERTY_LIST_STATE_KEY = "pe_property_list_state";
 
     // Normalizes raw property records so rendering always has fallback media, details, and URLs.
     function normalizeProperties(rawProperties) {
@@ -78,6 +77,111 @@
         return window.localStorage.getItem(VIEWER_PHONE_KEY) || "";
     }
 
+    // Tells us if the current layout is the mobile version where horizontal card scrolling is used.
+    function isMobilePropertyListView() {
+        return window.matchMedia("(max-width: 768px)").matches;
+    }
+
+    // Normalizes a property detail URL so saved state matches the card data-detail-url value.
+    function normalizeDetailUrl(url) {
+        if (!url) {
+            return "";
+        }
+
+        try {
+            const resolvedUrl = new URL(url, window.location.href);
+            return `${resolvedUrl.pathname.split("/").pop() || ""}${resolvedUrl.search}`;
+        } catch (error) {
+            return String(url);
+        }
+    }
+
+    // Saves the current mobile property list state so returning visitors land back near the last opened card.
+    function savePropertyListState(lastDetailUrl = "") {
+        if (!isMobilePropertyListView()) {
+            return;
+        }
+
+        const state = {
+            category: pageState.category,
+            query: pageState.query,
+            sort: pageState.sort,
+            lastDetailUrl: normalizeDetailUrl(lastDetailUrl)
+        };
+
+        window.sessionStorage.setItem(PROPERTY_LIST_STATE_KEY, JSON.stringify(state));
+    }
+
+    // Restores the saved property page filters and target card after returning from details on mobile.
+    function restorePropertyListState() {
+        if (!isMobilePropertyListView()) {
+            window.sessionStorage.removeItem(PROPERTY_LIST_STATE_KEY);
+            return null;
+        }
+
+        const saved = window.sessionStorage.getItem(PROPERTY_LIST_STATE_KEY);
+        if (!saved) {
+            return null;
+        }
+
+        try {
+            const state = JSON.parse(saved);
+            pageState.category = typeof state.category === "string" ? state.category : pageState.category;
+            pageState.query = typeof state.query === "string" ? state.query : pageState.query;
+            pageState.sort = typeof state.sort === "string" ? state.sort : pageState.sort;
+
+            const searchInput = document.getElementById("property-search");
+            const sortSelect = document.getElementById("property-sort");
+            if (searchInput) {
+                searchInput.value = pageState.query;
+            }
+            if (sortSelect) {
+                sortSelect.value = pageState.sort;
+            }
+
+            return {
+                lastDetailUrl: typeof state.lastDetailUrl === "string" ? state.lastDetailUrl : ""
+            };
+        } catch (error) {
+            window.sessionStorage.removeItem(PROPERTY_LIST_STATE_KEY);
+            return null;
+        }
+    }
+
+    // Scrolls the mobile property list back to the last opened card after the grid has been rendered.
+    function focusRestoredPropertyCard(restoredState) {
+        if (!restoredState?.lastDetailUrl || !isMobilePropertyListView()) {
+            return;
+        }
+
+        requestAnimationFrame(() => {
+            document.getElementById("all-properties")?.scrollIntoView({ block: "start" });
+            const targetCard = document.querySelector(`.card-clickable[data-detail-url="${restoredState.lastDetailUrl}"]`);
+            if (targetCard) {
+                targetCard.scrollIntoView({
+                    behavior: "auto",
+                    block: "nearest",
+                    inline: "center"
+                });
+            }
+        });
+    }
+
+    // Re-applies the last-opened card position when the properties page is restored from browser history.
+    function initPropertyListRestoreOnPageShow() {
+        window.addEventListener("pageshow", () => {
+            if (!document.getElementById("all-properties")) {
+                return;
+            }
+
+            const restoredPropertyListState = restorePropertyListState();
+            renderCategoryButtons();
+            updateCategoryCards();
+            renderPropertyGrid("all-properties");
+            focusRestoredPropertyCard(restoredPropertyListState);
+        });
+    }
+
     // Tells us whether the saved viewer phone number is valid enough to skip the gate.
     function hasViewerPhone() {
         return /^[0-9]{10}$/.test(getStoredViewerPhone());
@@ -100,7 +204,7 @@
             return;
         }
 
-        fetch("/track-property-view", {
+        fetch("track-property-view.php", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -156,7 +260,7 @@
     // Creates the HTML markup for a single property card in the listing grid.
     function createPropertyCard(property, index) {
         return `
-            <article class="card card-clickable">
+            <article class="card card-clickable" data-detail-url="${property.detailUrl}">
                 <span class="card-badge">${property.listingLabel}</span>
                 <a href="${property.detailUrl}" class="card-media-link" aria-label="View details for ${property.title}">
                     <img src="${property.image}" alt="${property.title}" class="card-img">
@@ -172,7 +276,6 @@
                     <div class="card-price">${property.price}</div>
                     <p class="card-desc">${property.description}</p>
                     <div class="card-actions">
-                        <a href="${property.detailUrl}" class="card-link">View Details</a>
                         <button class="card-btn" data-enquire="${property.title}" type="button">Enquire Now</button>
                     </div>
                 </div>
@@ -198,22 +301,13 @@
         }
 
         const { limit = null, featuredOnly = false } = options;
-        let items = getProperties({ featuredOnly, ignorePageFilters: featuredOnly });
+        const items = getProperties({ featuredOnly, ignorePageFilters: featuredOnly });
         const totalItems = items.length;
 
-        if (!featuredOnly && limit === null) {
-            const shouldLimit = !pageState.expanded && totalItems > DEFAULT_PROPERTY_LIMIT;
-            if (shouldLimit) {
-                items = items.slice(0, DEFAULT_PROPERTY_LIMIT);
-            }
-        }
+        const visibleItems = typeof limit === "number" ? items.slice(0, limit) : items;
 
-        if (typeof limit === "number") {
-            items = items.slice(0, limit);
-        }
-
-        container.innerHTML = items.length
-            ? items.map((property, index) => createPropertyCard(property, index)).join("")
+        container.innerHTML = visibleItems.length
+            ? visibleItems.map((property, index) => createPropertyCard(property, index)).join("")
             : createEmptyState();
 
         const counter = document.getElementById("property-results-count");
@@ -221,30 +315,16 @@
             counter.textContent = `${totalItems} propert${totalItems === 1 ? "y" : "ies"} found`;
         }
 
-        renderPropertyGridActions(totalItems, items.length, featuredOnly);
+        renderPropertyGridActions(totalItems, visibleItems.length, featuredOnly);
     }
 
     // Shows or hides the Show More / Show Less control based on the current list size.
     function renderPropertyGridActions(totalItems, visibleItems, featuredOnly) {
         const actions = document.getElementById("property-grid-actions");
-        if (!actions || featuredOnly) {
+        if (!actions) {
             return;
         }
-
-        if (totalItems <= DEFAULT_PROPERTY_LIMIT) {
-            actions.innerHTML = "";
-            return;
-        }
-
-        const buttonLabel = pageState.expanded
-            ? "Show Less"
-            : `Show More (${totalItems - visibleItems} more)`;
-
-        actions.innerHTML = `
-            <button class="btn property-toggle-btn" type="button" data-toggle-properties>
-                ${buttonLabel}
-            </button>
-        `;
+        actions.innerHTML = "";
     }
 
     // Renders the category filter buttons using the category data from properties.json.
@@ -279,7 +359,6 @@
 
     // Re-renders the filtered property list after a category change.
     function applyFilters() {
-        pageState.expanded = false;
         renderCategoryButtons();
         updateCategoryCards();
         renderPropertyGrid("all-properties");
@@ -288,12 +367,39 @@
     // Handles delegated clicks for property links, enquiry buttons, category filters, and show-more controls.
     function attachPropertyActions() {
         document.addEventListener("click", (event) => {
+            const propertyCard = event.target.closest(".card-clickable[data-detail-url]");
+            const clickedInteractiveElement = event.target.closest("a, button, input, select, textarea, label");
+            if (propertyCard && !clickedInteractiveElement) {
+                const detailUrl = propertyCard.getAttribute("data-detail-url");
+                if (!detailUrl) {
+                    return;
+                }
+
+                if (!hasViewerPhone()) {
+                    openPhoneGate(() => {
+                        savePropertyListState(detailUrl);
+                        window.location.href = detailUrl;
+                    });
+                    return;
+                }
+
+                savePropertyListState(detailUrl);
+                window.location.href = detailUrl;
+                return;
+            }
+
             const propertyLink = event.target.closest('a[href*="property-details.html"]');
-            if (propertyLink && !hasViewerPhone()) {
-                event.preventDefault();
-                openPhoneGate(() => {
-                    window.location.href = propertyLink.href;
-                });
+            if (propertyLink) {
+                if (!hasViewerPhone()) {
+                    event.preventDefault();
+                    openPhoneGate(() => {
+                        savePropertyListState(propertyLink.getAttribute("href") || propertyLink.href);
+                        window.location.href = propertyLink.href;
+                    });
+                    return;
+                }
+
+                savePropertyListState(propertyLink.getAttribute("href") || propertyLink.href);
                 return;
             }
 
@@ -316,15 +422,6 @@
                 document.getElementById("all-properties")?.scrollIntoView({ behavior: "smooth", block: "start" });
                 return;
             }
-
-            const toggleButton = event.target.closest("[data-toggle-properties]");
-            if (toggleButton) {
-                pageState.expanded = !pageState.expanded;
-                renderPropertyGrid("all-properties");
-                if (!pageState.expanded) {
-                    document.getElementById("all-properties")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-            }
         });
     }
 
@@ -336,7 +433,6 @@
         if (searchInput) {
             searchInput.addEventListener("input", (event) => {
                 pageState.query = event.target.value;
-                pageState.expanded = false;
                 renderPropertyGrid("all-properties");
             });
         }
@@ -344,7 +440,6 @@
         if (sortSelect) {
             sortSelect.addEventListener("change", (event) => {
                 pageState.sort = event.target.value;
-                pageState.expanded = false;
                 renderPropertyGrid("all-properties");
             });
         }
@@ -469,6 +564,8 @@
             return;
         }
 
+        document.body.classList.add("property-detail-view");
+
         const property = getPropertyFromUrl();
 
         if (!property) {
@@ -496,6 +593,16 @@
                             <button class="gallery-arrow gallery-arrow-right" type="button" data-gallery-nav="next" aria-label="Next media">
                                 <i class="fas fa-chevron-right"></i>
                             </button>
+                        </div>
+                        <div class="gallery-dots" aria-label="Property media pagination">
+                            ${property.media.map((_, index) => `
+                                <button
+                                    class="gallery-dot${index === 0 ? " active" : ""}"
+                                    type="button"
+                                    data-gallery-dot="${index}"
+                                    aria-label="Go to media ${index + 1}"
+                                ></button>
+                            `).join("")}
                         </div>
                         <div class="contact-action-bar">
                             <a
@@ -579,6 +686,7 @@
         wrapper.className = "phone-gate-overlay hidden";
         wrapper.innerHTML = `
             <div class="phone-gate-dialog">
+                <button class="phone-gate-close" type="button" aria-label="Close phone number popup">&times;</button>
                 <h2>View Property Details</h2>
                 <p>Enter your phone number</p>
                 <form id="phoneGateForm" class="phone-gate-form">
@@ -596,6 +704,7 @@
         const form = wrapper.querySelector("#phoneGateForm");
         const input = wrapper.querySelector("#phoneGateInput");
         const error = wrapper.querySelector("#phoneGateError");
+        const closeButton = wrapper.querySelector(".phone-gate-close");
 
         form.addEventListener("submit", (event) => {
             event.preventDefault();
@@ -614,6 +723,22 @@
                 const callback = phoneGateSubmitHandler;
                 phoneGateSubmitHandler = null;
                 callback(value);
+            }
+        });
+
+        closeButton?.addEventListener("click", () => {
+            closePhoneGate();
+        });
+
+        wrapper.addEventListener("click", (event) => {
+            if (event.target === wrapper) {
+                closePhoneGate();
+            }
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && phoneGateModal && !phoneGateModal.classList.contains("hidden")) {
+                closePhoneGate();
             }
         });
 
@@ -661,6 +786,8 @@
     function initPropertyGallery() {
         const slides = Array.from(document.querySelectorAll("[data-slide]"));
         const navButtons = Array.from(document.querySelectorAll("[data-gallery-nav]"));
+        const dotButtons = Array.from(document.querySelectorAll("[data-gallery-dot]"));
+        const galleryStage = document.querySelector(".gallery-stage");
 
         if (!slides.length) {
             return;
@@ -682,6 +809,9 @@
             slides.forEach((slide, slideIndex) => {
                 slide.classList.toggle("active", slideIndex === currentIndex);
             });
+            dotButtons.forEach((dot, dotIndex) => {
+                dot.classList.toggle("active", dotIndex === currentIndex);
+            });
             pauseVideos();
         };
 
@@ -690,6 +820,34 @@
                 showSlide(currentIndex + (button.dataset.galleryNav === "next" ? 1 : -1));
             });
         });
+
+        dotButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const slideIndex = Number(button.dataset.galleryDot);
+                if (!Number.isNaN(slideIndex)) {
+                    showSlide(slideIndex);
+                }
+            });
+        });
+
+        if (galleryStage && window.matchMedia("(max-width: 480px)").matches) {
+            let touchStartX = 0;
+
+            galleryStage.addEventListener("touchstart", (event) => {
+                touchStartX = event.touches[0]?.clientX || 0;
+            }, { passive: true });
+
+            galleryStage.addEventListener("touchend", (event) => {
+                const touchEndX = event.changedTouches[0]?.clientX || 0;
+                const deltaX = touchStartX - touchEndX;
+
+                if (Math.abs(deltaX) < 40) {
+                    return;
+                }
+
+                showSlide(currentIndex + (deltaX > 0 ? 1 : -1));
+            }, { passive: true });
+        }
 
         showSlide(0);
     }
@@ -720,6 +878,7 @@
         attachPropertyActions();
         attachPropertyToolbar();
         initStatsObserver();
+        initPropertyListRestoreOnPageShow();
 
         const needsPropertyData = Boolean(
             document.getElementById("featured-properties")
@@ -734,10 +893,12 @@
 
         try {
             await loadPropertyData();
+            const restoredPropertyListState = restorePropertyListState();
             renderPropertyGrid("featured-properties", { limit: 3, featuredOnly: true });
             renderCategoryButtons();
             updateCategoryCards();
             renderPropertyGrid("all-properties");
+            focusRestoredPropertyCard(restoredPropertyListState);
             if (initPropertyAccessGate()) {
                 renderPropertyDetail();
             }

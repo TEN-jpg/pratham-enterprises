@@ -92,14 +92,14 @@
                 <div class="info-card">
                     <div class="info-icon"><i class="fas fa-phone"></i></div>
                     <h3>Call Us</h3>
-                    <p>+91 72081 53358</p>
-                    <p>+91 86520 16879</p>
+                    <p><a href="tel:+917208153358">+91 72081 53358</a></p>
+                    <p><a href="tel:+918652016879">+91 86520 16879</a></p>
                 </div>
                 <div class="info-card">
                     <div class="info-icon"><i class="fas fa-envelope"></i></div>
                     <h3>Email Us</h3>
-                    <p>prathamenterprises36@gmail.com</p>
-                    <p>bhauraobansod28@gmail.com</p>
+                    <p><a href="mailto:prathamenterprises36@gmail.com">prathamenterprises36@gmail.com</a></p>
+                    <p><a href="mailto:bhauraobansod28@gmail.com">bhauraobansod28@gmail.com</a></p>
                 </div>
                 <div class="info-card">
                     <div class="info-icon"><i class="fas fa-location-dot"></i></div>
@@ -113,8 +113,8 @@
     <footer>
         <div class="footer-content">
             <img src="assets/images/petlogo.png" alt="Pratham Enterprises logo" class="footer-logo">
-            <p><i class="fas fa-phone"></i> +91 72081 53358</p>
-            <p><i class="fas fa-envelope"></i> prathamenterprises36@gmail.com</p>
+            <p><i class="fas fa-phone"></i> <a href="tel:+917208153358">+91 72081 53358</a></p>
+            <p><i class="fas fa-envelope"></i> <a href="mailto:prathamenterprises36@gmail.com">prathamenterprises36@gmail.com</a></p>
             <p><i class="fas fa-map-marker-alt"></i> Seawoods, Navi Mumbai - 400706</p>
             <div class="footer-social">
                 <a href="https://www.facebook.com/profile.php?id=100075809298604"><i class="fab fa-facebook-f"></i></a>
@@ -175,7 +175,7 @@
             submitBtn.innerText = "Submitting...";
             submitBtn.disabled = true;
 
-            fetch("/submit-enquiry", {
+            fetch("submit-enquiry.php", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

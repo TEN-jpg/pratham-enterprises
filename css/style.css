@@ -314,7 +314,8 @@ nav.scrolled {
 
 .property-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 360px));
+    justify-content: center;
     gap: 40px;
     margin-bottom: 60px;
 }
@@ -329,6 +330,10 @@ nav.scrolled {
     flex-direction: column;
     height: 100%;
     border: 1px solid rgba(26, 26, 26, 0.08);
+}
+
+.card-clickable {
+    cursor: pointer;
 }
 
 .card:hover {
@@ -566,6 +571,30 @@ nav.scrolled {
 
 .gallery-arrow-right {
     right: 18px;
+}
+
+.gallery-dots {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.gallery-dot {
+    width: 8px;
+    height: 8px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(26, 26, 26, 0.2);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.gallery-dot.active {
+    width: 22px;
+    border-radius: 999px;
+    background: var(--primary-red);
 }
 
 .detail-chip {
@@ -930,8 +959,26 @@ footer {
     }
 
     .property-grid {
-        grid-template-columns: 1fr;
-        gap: 30px;
+        grid-auto-flow: column;
+        grid-auto-columns: 300px;
+        grid-template-columns: none;
+        justify-content: flex-start;
+        gap: 18px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 10px;
+        margin-bottom: 36px;
+        scroll-snap-type: x proximity;
+    }
+
+    .property-grid .card {
+        min-height: auto;
+        scroll-snap-align: start;
+    }
+
+    .property-grid .empty-state {
+        grid-column: auto;
+        min-width: min(100%, 320px);
     }
 
     .stats-container {
@@ -1027,6 +1074,58 @@ footer {
         font-size: 1.2rem;
     }
 
+    .card {
+        border-radius: 14px;
+    }
+
+    #featured-properties .card-desc,
+    #featured-properties .card-actions {
+        display: none;
+    }
+
+    #featured-properties .card-badge {
+        display: inline-flex;
+        top: 12px;
+        right: 12px;
+        padding: 6px 12px;
+        font-size: 0.72rem;
+    }
+
+    #featured-properties .card-img {
+        height: 150px;
+    }
+
+    #featured-properties .card-body {
+        padding: 16px;
+    }
+
+    #featured-properties .card-meta {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    #featured-properties .card-category,
+    #featured-properties .card-location {
+        font-size: 0.84rem;
+        margin-bottom: 0;
+    }
+
+    #featured-properties .card-title {
+        font-size: 1.08rem;
+        margin-bottom: 8px;
+    }
+
+    #featured-properties .card-price {
+        font-size: 1.05rem;
+        margin-bottom: 0;
+    }
+
+    #featured-properties .card-title-link,
+    #featured-properties .card-media-link {
+        pointer-events: none;
+    }
+
     .form-container {
         padding: 20px;
     }
@@ -1036,9 +1135,34 @@ footer {
         max-width: min(100%, 250px);
     }
 
+    .footer-content p {
+        font-size: 0.92rem;
+        margin-bottom: 8px;
+    }
+
+    .footer-locations {
+        font-size: 0.76rem;
+        line-height: 1.55;
+        margin: 0 auto 16px;
+        max-width: 320px;
+    }
+
     .footer-meta {
         flex-direction: column;
         text-align: center;
+        gap: 8px;
+        margin-top: 20px;
+        padding-top: 14px;
+    }
+
+    .footer-meta p {
+        font-size: 0.76rem;
+        line-height: 1.45;
+    }
+
+    .footer-rera {
+        font-size: 0.74rem;
+        letter-spacing: 0.01em;
     }
 
     .property-detail-title,
@@ -1080,6 +1204,65 @@ footer {
 
     .property-detail-page {
         padding-bottom: 118px;
+        padding-top: 18px;
+    }
+
+    .property-detail-page .back-link {
+        margin-bottom: 16px;
+        font-size: 0.98rem;
+    }
+
+    .property-detail-layout {
+        gap: 18px;
+    }
+
+    .property-gallery,
+    .property-detail-panel {
+        border-radius: 0;
+        padding: 0;
+        background: transparent;
+        border: none;
+    }
+
+    .gallery-stage {
+        min-height: 260px;
+        height: 260px;
+        border-radius: 0;
+        overflow: hidden;
+        background: #111;
+    }
+
+    .media-slide,
+    .detail-media {
+        min-height: 260px;
+        height: 260px;
+    }
+
+    .gallery-arrow {
+        display: none;
+    }
+
+    .gallery-dots {
+        display: flex;
+        margin: 10px 0 0;
+    }
+
+    .property-detail-panel {
+        background: var(--white);
+        border-radius: 24px;
+        padding: 22px 18px 24px;
+    }
+
+    .detail-chip {
+        margin-bottom: 12px;
+    }
+
+    .property-detail-location {
+        margin-bottom: 12px;
+    }
+
+    .property-detail-overview {
+        margin-bottom: 20px;
     }
 
     .contact-action-btn {
@@ -1239,13 +1422,45 @@ body.phone-gate-open {
     z-index: 2000;
 }
 
+@media (max-width: 480px) {
+    body.property-detail-view .hero {
+        display: none;
+    }
+}
+
+.phone-gate-overlay.hidden {
+    display: none;
+}
+
 .phone-gate-dialog {
+    position: relative;
     width: min(100%, 440px);
     background: var(--white);
     border-radius: 20px;
     padding: 32px 28px;
     text-align: left;
     border: 1px solid rgba(26, 26, 26, 0.08);
+}
+
+.phone-gate-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.phone-gate-close:hover {
+    color: var(--dark-black);
+    background: rgba(26, 26, 26, 0.06);
 }
 
 .phone-gate-dialog h2 {
@@ -1487,6 +1702,12 @@ button.info-card {
 
     .toolbar-field {
         width: 100%;
+    }
+
+    .property-grid {
+        grid-auto-columns: 248px;
+        gap: 14px;
+        margin-bottom: 28px;
     }
 
     .property-filter-row {
